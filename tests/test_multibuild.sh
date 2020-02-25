@@ -9,6 +9,7 @@ source tests/test_fill_submodule.sh
 
 if [ -n "$IS_OSX" ]; then
     source osx_utils.sh
+    MB_PYTHON_OSX_VER=${MB_PYTHON_OSX_VER:-$(macpython_sdk_for_version $MB_PYTHON_VERSION)}
 
     # To work round:
     # https://travis-ci.community/t/syntax-error-unexpected-keyword-rescue-expecting-keyword-end-in-homebrew/5623
@@ -24,6 +25,7 @@ else
     source tests/test_manylinux_utils.sh
 fi
 if [ -n "$TEST_BUILDS" ]; then
+    MB_PYTHON_VERSION=${MB_PYTHON_VERSION:-3.7}
     if [ -n "$IS_OSX" ]; then
         # This checked in test_library_builders.
         # Will be set automatically by docker call in build_multilinux below.
@@ -35,7 +37,11 @@ if [ -n "$TEST_BUILDS" ]; then
         touch config.sh
         source travis_linux_steps.sh
         my_plat=${PLAT:-x86_64}
-        build_multilinux $my_plat "source tests/test_library_builders.sh"
+        build_multilinux $my_plat "
+            source tests/test_manylinux_utils_docker.sh
+            source tests/test_library_builders.sh
+        "
+        build_multilinux $my_plat "pip install simplejson"
     fi
 fi
 
